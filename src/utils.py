@@ -1,17 +1,14 @@
-import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
+import pytz
 
-def get_trading_day(date_str: str) -> bool:
-    """Zkontroluje, zda je daný den pracovní den."""
-    try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-        # Zjednodušení: víkendy jsou neobchodní dny
-        return date_obj.weekday() < 5
-    except ValueError:
-        return False
+EST = pytz.timezone('America/New_York')
+UTC = pytz.utc
 
-@st.cache_data(ttl=3600)
-def convert_ms_to_datetime(ms):
-    """Převede milisekundy na datetime objekt s časovou zónou UTC."""
-    return pd.to_datetime(ms, unit='ms', utc=True)
+def utc_to_est(ts: pd.Timestamp) -> pd.Timestamp:
+    """Převede UTC timestamp na US/Eastern (EST/EDT) a vrátí časově‑značený objekt."""
+    return ts.tz_convert(EST)
+
+def iso_to_timestamp(iso_str: str) -> pd.Timestamp:
+    """Převede ISO‑8601 řetězec (např. '2025-04-27T13:45:00Z') na tz‑aware Timestamp v UTC."""
+    return pd.to_datetime(iso_str).tz_localize('UTC')
